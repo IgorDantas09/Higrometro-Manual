@@ -22,13 +22,21 @@ import {
   FileDown,
 } from "lucide-react";
 
-const formatBR = (value: number, digits = 2) =>
-  Number.isFinite(value)
-    ? value.toLocaleString("pt-BR", {
+const formatBR = (value: unknown, digits = 2) => {
+  const numericValue =
+    typeof value === "number"
+      ? value
+      : typeof value === "string"
+      ? Number(value.replace(",", "."))
+      : Number(value);
+
+  return Number.isFinite(numericValue)
+    ? numericValue.toLocaleString("pt-BR", {
         minimumFractionDigits: digits,
         maximumFractionDigits: digits,
       })
     : "0,00";
+};
 
 type Nozzle = {
   id: number;
@@ -507,14 +515,12 @@ export default function App() {
                           }}
                         />
                         <Tooltip
-                          formatter={(value: number, name: string) => [
+                          formatter={(value: unknown, name: string | number) => [
                             `${formatBR(value)} L/ha`,
-                            name,
+                            String(name),
                           ]}
                         />
-                        <Legend
-                          wrapperStyle={{ color: "#000000", fontSize: 12 }}
-                        />
+                        <Legend wrapperStyle={{ color: "#000000", fontSize: 12 }} />
                         <ReferenceLine y={alvoLha} stroke="#2563eb" strokeWidth={3} />
                         <Bar dataKey="lha" name="Vazão final" radius={[8, 8, 0, 0]}>
                           {results.rows.map((entry, index) => (
