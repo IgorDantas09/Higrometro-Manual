@@ -67,15 +67,18 @@ const formatBR = (value: unknown, digits = 2): string => {
 const buildNozzles = (count: number): Nozzle[] =>
   Array.from({ length: count }, (_, i) => ({ id: i + 1, lpm: "" }));
 
-function CustomTooltip({
-  active,
-  payload,
-  label,
-}: TooltipProps<ValueType, NameType>) {
-  if (!active || !payload || payload.length === 0) return null;
+function CustomTooltip(props: TooltipProps<ValueType, NameType>) {
+  const { active } = props;
+  const payload = Array.isArray((props as { payload?: unknown[] }).payload)
+    ? ((props as { payload?: unknown[] }).payload as unknown[])
+    : [];
+  const label = (props as { label?: unknown }).label;
 
-  const first = payload[0];
-  const row = first?.payload as ResultRow | undefined;
+  if (!active || payload.length === 0) return null;
+
+  const first = payload[0] as { payload?: ResultRow; value?: unknown } | undefined;
+  const row = first?.payload;
+  const valor = toNumber(first?.value);
 
   return (
     <div
@@ -90,9 +93,11 @@ function CustomTooltip({
         minWidth: 180,
       }}
     >
-      <div style={{ fontWeight: 700, marginBottom: 6 }}>Bico {String(label)}</div>
+      <div style={{ fontWeight: 700, marginBottom: 6 }}>
+        Bico {String(label ?? "-")}
+      </div>
       <div>LPM coletado: {formatBR(row?.lpm, 3)}</div>
-      <div>Vazão final: {formatBR(row?.lha, 2)} L/ha</div>
+      <div>Vazão final: {formatBR(valor, 2)} L/ha</div>
       <div>Desvio: {formatBR(row?.desvioPct, 2)}%</div>
       <div>Status: {row?.status ?? "-"}</div>
     </div>
